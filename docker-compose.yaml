@@ -35,6 +35,26 @@ services:
             - 8443:8443
         restart: unless-stopped
 
+    qbittorrent:
+        image: ghcr.io/linuxserver/qbittorrent
+        container_name: qbittorrent
+        environment:
+            - PUID=1000
+            - PGID=1000
+            - TZ=Europe/Madrid
+            - UMASK_SET=022
+            - WEBUI_PORT=8080
+        volumes:
+            - /code/qb-config:/config
+            - /data/dl:/downloads
+        ports:
+            - 6881:6881
+            - 6881:6881/udp
+            - 8080:8080
+        network_mode: bridge
+        restart: unless-stopped
+    
+
     web:
         image: nginx:latest 
         container_name: "web"
@@ -50,6 +70,7 @@ services:
         links:
             - code-server
             - nextcloud
+            - qbittorrent
 
 
     vpn-bridge:
