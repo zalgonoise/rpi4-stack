@@ -1,0 +1,93 @@
+version: "3.7"
+services:
+  
+
+    nextcloud:
+        image: linuxserver/nextcloud
+        container_name: nextcloud
+        environment:
+            - PUID=1000
+            - PGID=1000
+            - TZ=Europe/Madrid
+        network_mode: bridge
+        volumes:
+            - /code/nc-config:/config
+            - /data:/mount-points/data:rw
+        ports:
+            - 9443:443
+        restart: unless-stopped
+
+    code-server:
+        image: ghcr.io/linuxserver/code-server
+        container_name: code-server
+        environment:
+            - PUID=1000
+            - PGID=1000
+            - TZ=Europe/Madrid
+        env_file:
+            - secrets/code-server.env
+        network_mode: bridge
+        volumes:
+            - /code/cs-config:/config
+            - /git:/git
+            - /code:/code
+        ports:
+            - 8443:8443
+        restart: unless-stopped
+
+    web:
+        image: nginx:latest 
+        container_name: "web"
+        hostname: "web"
+        ports:
+            - "80:80"
+            - "443:443"
+        network_mode: bridge
+        volumes: 
+            - ./proxy:/etc/nginx/conf.d
+            - ./ssl:/etc/nginx/ssl
+        restart: unless-stopped
+        links:
+            - code-server
+            - nextcloud
+
+
+    vpn-bridge:
+        build: 
+            context: ./vpn-bridge
+            dockerfile: ./Dockerfile
+        container_name: "vpn-bridge"
+        privileged: true
+        restart: always
+        stdin_open: true
+        network_mode: "host"
+
+
+
+    #  plex:
+    #  image: linuxserver/plex
+    #  container_name: plex
+    #  ports:
+    #    - "32400:32400"
+    #    - "1900:1900/udp"
+    #    - "3005:3005"
+    #    - "5353:5353/udp"
+    #    - "8324:8324"
+    #    - "32410:32410/udp"
+    #    - "32412:32412/udp"
+    #    - "32413:32413/udp"
+    #    - "32414:32414/udp"
+    #    - "32469:32469"
+    #  environment:
+    #    - PUID=1000
+    #    - PGID=1000
+    #    - VERSION=docker
+    #  env_file:
+    #    - secrets/plex.env 
+    #  volumes:
+    #    - /code/plx-config:/config
+    #    - /data/movies:media/movies
+    #    - /data/shows:media/shows
+    #    - /data/anime:media/anime
+    #  restart: unless-stopped
+
