@@ -63,11 +63,42 @@ services:
             - VIRTUAL_PORT=9000
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock
-            - /data/prt-config:/data
+            - /code/prt-config:/data
         ports:
             - 9000:9000
         network_mode: bridge
         restart: unless-stopped
+
+    plex:
+        image: linuxserver/plex
+        container_name: plex
+        devices:
+            - /dev/dri:/dev/dri
+        ports:
+            - "32400:32400"
+            - "1900:1900/udp"
+            - "3005:3005"
+            - "5353:5353/udp"
+            - "8324:8324"
+            - "32410:32410/udp"
+            - "32412:32412/udp"
+            - "32413:32413/udp"
+            - "32414:32414/udp"
+            - "32469:32469"
+        environment:
+            - PUID=1000
+            - PGID=1000
+            - VERSION=docker
+            - ADVERTISE_IP=https://plex.localhost:443/
+        network_mode: bridge
+        env_file:
+            - secrets/plex.env
+        volumes:
+            - /code/plx-config:/config
+            - /data/movies:/media/movies:ro
+            - /data/shows:/media/shows:ro
+        restart: unless-stopped
+
 
     web:
         image: nginx:latest 
@@ -85,6 +116,8 @@ services:
             - code-server
             - nextcloud
             - qbittorrent
+            - portainer
+            - plex
 
 
     vpn-tun0:
@@ -112,30 +145,4 @@ services:
         network_mode: "host"
 
 
-    #  plex:
-    #  image: linuxserver/plex
-    #  container_name: plex
-    #  ports:
-    #    - "32400:32400"
-    #    - "1900:1900/udp"
-    #    - "3005:3005"
-    #    - "5353:5353/udp"
-    #    - "8324:8324"
-    #    - "32410:32410/udp"
-    #    - "32412:32412/udp"
-    #    - "32413:32413/udp"
-    #    - "32414:32414/udp"
-    #    - "32469:32469"
-    #  environment:
-    #    - PUID=1000
-    #    - PGID=1000
-    #    - VERSION=docker
-    #  env_file:
-    #    - secrets/plex.env 
-    #  volumes:
-    #    - /code/plx-config:/config
-    #    - /data/movies:media/movies
-    #    - /data/shows:media/shows
-    #    - /data/anime:media/anime
-    #  restart: unless-stopped
 
