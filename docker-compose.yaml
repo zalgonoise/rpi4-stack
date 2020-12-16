@@ -53,7 +53,21 @@ services:
             - 8080:8080
         network_mode: bridge
         restart: unless-stopped
-    
+
+    portainer:
+        image: portainer/portainer-ce
+        container_name: portainer
+        command: -H unix:///var/run/docker.sock
+        environment:
+            - VIRTUAL_HOST=docker.nw.mooo.com
+            - VIRTUAL_PORT=9000
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+            - /data/prt-config:/data
+        ports:
+            - 9000:9000
+        network_mode: bridge
+        restart: unless-stopped
 
     web:
         image: nginx:latest 
