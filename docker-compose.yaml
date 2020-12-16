@@ -87,16 +87,29 @@ services:
             - qbittorrent
 
 
-    vpn-bridge:
+    vpn-tun0:
         build: 
             context: ./vpn-bridge
             dockerfile: ./Dockerfile
-        container_name: "vpn-bridge"
+            args:
+                - tun=tun0/
+        container_name: "vpn-tun0"
         privileged: true
         restart: always
         stdin_open: true
         network_mode: "host"
 
+    vpn-tun1:
+        build: 
+            context: ./vpn-bridge
+            dockerfile: ./Dockerfile
+            args:
+                - tun=tun1/
+        container_name: "vpn-tun1"
+        privileged: true
+        restart: always
+        stdin_open: true
+        network_mode: "host"
 
 
     #  plex:
