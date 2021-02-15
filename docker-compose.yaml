@@ -129,7 +129,7 @@ services:
             - qbittorrent
             - portainer
             - plex
-            - gitea
+            - gogs
 
 
     vpn-tun0:
