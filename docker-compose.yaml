@@ -3,7 +3,8 @@ services:
     gitea:
         image: gogs/gogs
         container_name: gogs
-        network_mode: bridge
+        networks:
+            - stack
         restart: unless-stopped
         volumes:
           - /code/git:/data
@@ -20,7 +21,8 @@ services:
             - PUID=${UID:-1000}
             - PGID=${GID:-1000}
             - TZ=Europe/Madrid
-        network_mode: bridge
+        networks:
+            - stack
         volumes:
             - /code/nc-config:/config
             - /data:/mount-points/data:rw
@@ -37,7 +39,8 @@ services:
             - TZ=Europe/Madrid
         env_file:
             - secrets/code-server.env
-        network_mode: bridge
+        networks:
+            - stack
         volumes:
             - /code/cs-config:/config
             - /git:/git
@@ -62,7 +65,8 @@ services:
             - 6881:6881
             - 6881:6881/udp
             - 8080:8080
-        network_mode: bridge
+        networks:
+            - stack
         restart: unless-stopped
 
     portainer:
@@ -77,7 +81,8 @@ services:
             - /code/prt-config:/data
         ports:
             - 9000:9000
-        network_mode: bridge
+        networks:
+            - stack
         restart: unless-stopped
 
     plex:
@@ -101,7 +106,8 @@ services:
             - PGID=${GID:-1000}
             - VERSION=docker
             - ADVERTISE_IP=https://plex.localhost:443/
-        network_mode: bridge
+        networks:
+            - stack
         env_file:
             - secrets/plex.env
         volumes:
@@ -112,18 +118,19 @@ services:
 
 
     web:
-        image: nginx:latest 
+        image: nginx:latest
         container_name: "web"
         hostname: "web"
         ports:
             - "80:80"
             - "443:443"
-        network_mode: bridge
-        volumes: 
+        networks:
+            - stack
+        volumes:
             - ./proxy:/etc/nginx/conf.d
             - ./ssl:/etc/nginx/ssl
         restart: unless-stopped
-        links:
+        depends_on:
             - code-server
             - nextcloud
             - qbittorrent
@@ -133,7 +140,7 @@ services:
 
 
     vpn-tun0:
-        build: 
+        build:
             context: ./vpn-bridge
             dockerfile: ./Dockerfile
             args:
@@ -142,10 +149,11 @@ services:
         privileged: true
         restart: always
         stdin_open: true
-        network_mode: "host"
+        networks:
+            - tun
 
     vpn-tun1:
-        build: 
+        build:
             context: ./vpn-bridge
             dockerfile: ./Dockerfile
             args:
@@ -154,7 +162,12 @@ services:
         privileged: true
         restart: always
         stdin_open: true
-        network_mode: "host"
+        networks:
+            - tun
 
 
-
+networks:
+    stack:
+        driver: "bridge"
+    tun:
+        driver: "host"
