@@ -1,13 +1,14 @@
 version: "3.7"
 services:
-    gitea:
-        image: gogs/gogs
-        container_name: gogs
+
+    git:
+        image: gogs/gogs-git
+        container_name: git
         networks:
-            - stack
+            - netstack
         restart: unless-stopped
         volumes:
-          - /code/git:/data
+          - /data/git:/data
           - /etc/timezone:/etc/timezone:ro
           - /etc/localtime:/etc/localtime:ro
         ports:
@@ -22,7 +23,7 @@ services:
             - PGID=${GID:-1000}
             - TZ=Europe/Madrid
         networks:
-            - stack
+            - netstack
         volumes:
             - /code/nc-config:/config
             - /data:/mount-points/data:rw
@@ -40,7 +41,7 @@ services:
         env_file:
             - secrets/code-server.env
         networks:
-            - stack
+            - netstack
         volumes:
             - /code/cs-config:/config
             - /git:/git
@@ -66,7 +67,7 @@ services:
             - 6881:6881/udp
             - 8080:8080
         networks:
-            - stack
+            - netstack
         restart: unless-stopped
 
     portainer:
@@ -74,7 +75,7 @@ services:
         container_name: portainer
         command: -H unix:///var/run/docker.sock
         environment:
-            - VIRTUAL_HOST=docker.nw.mooo.com
+            - VIRTUAL_HOST=docker.dome
             - VIRTUAL_PORT=9000
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock
@@ -82,7 +83,7 @@ services:
         ports:
             - 9000:9000
         networks:
-            - stack
+            - netstack
         restart: unless-stopped
 
     plex:
@@ -105,13 +106,13 @@ services:
             - PUID=${UID:-1000}
             - PGID=${GID:-1000}
             - VERSION=docker
-            - ADVERTISE_IP=https://plex.localhost:443/
+            - ADVERTISE_IP=https://plex.dome:443/
         networks:
-            - stack
+            - netstack
         env_file:
             - secrets/plex.env
         volumes:
-            - /code/plx-config:/config
+            - /code/plex-config:/config
             - /data/movies:/media/movies:ro
             - /data/shows:/media/shows:ro
         restart: unless-stopped
@@ -124,19 +125,19 @@ services:
         ports:
             - "80:80"
             - "443:443"
+        restart: always
         networks:
-            - stack
+            - netstack
         volumes:
             - ./proxy:/etc/nginx/conf.d
             - ./ssl:/etc/nginx/ssl
-        restart: unless-stopped
         depends_on:
             - code-server
             - nextcloud
             - qbittorrent
             - portainer
             - plex
-            - gogs
+            - git
 
 
     vpn-tun0:
@@ -150,7 +151,7 @@ services:
         restart: always
         stdin_open: true
         networks:
-            - tun
+            - nettun
 
     vpn-tun1:
         build:
@@ -163,11 +164,11 @@ services:
         restart: always
         stdin_open: true
         networks:
-            - tun
+            - nettun
 
 
 networks:
-    stack:
+    netstack:
         driver: "bridge"
-    tun:
+    nettun:
         driver: "host"
