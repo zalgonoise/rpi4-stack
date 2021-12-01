@@ -117,6 +117,25 @@ services:
             - /data/shows:/media/shows:ro
         restart: unless-stopped
 
+    pihole:
+        container_name: pihole
+        image: pihole/pihole:latest
+        ports:
+            - "53:53/tcp"
+            - "53:53/udp"
+            - "67:67/udp"
+            - "11080:11080/tcp"
+        environment:
+            - TZ=Europe/Madrid
+        env_file:
+            - secrets/pihole.env
+        volumes:
+            - /data/pihole/pihole:/etc/pihole/
+            - /data/pihole/dnsmasq:/etc/dnsmasq.d/
+        cap_add:
+            - NET_ADMIN
+        network_mode: host
+        restart: unless-stopped
 
     web:
         image: nginx:latest
