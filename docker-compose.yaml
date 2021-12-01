@@ -2,7 +2,7 @@ version: "3.7"
 services:
 
     git:
-        image: gogs/gogs-git
+        image: gogs/gogs-rpi
         container_name: git
         networks:
             - netstack
@@ -156,6 +156,7 @@ services:
             - qbittorrent
             - portainer
             - plex
+            - pihole
             - git
 
 
